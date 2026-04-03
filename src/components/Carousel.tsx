@@ -60,6 +60,7 @@ export default function Carousel({ slides }: CarouselProps) {
             alt={slides[current].headline}
             fill
             priority={current === 0}
+            loading={current === 0 ? "eager" : "lazy"}
             sizes="100vw"
             className="object-cover"
           />
