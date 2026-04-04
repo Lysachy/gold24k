@@ -1,0 +1,246 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  category: string;
+  price: number;
+  status: string;
+  weight: number | null;
+  purity: string | null;
+}
+
+interface ProductResponse {
+  products: Product[];
+  total: number;
+  pages: number;
+  page: number;
+}
+
+const CATEGORIES = ["Ring", "Necklace", "Bracelet", "Earring", "Bar", "Coin", "Pendant", "Other"];
+
+export default function ProductTable() {
+  const [data, setData] = useState<ProductResponse>({
+    products: [],
+    total: 0,
+    pages: 0,
+    page: 1,
+  });
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [status, setStatus] = useState("");
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
+    const params = new URLSearchParams();
+    if (search) params.set("search", search);
+    if (category) params.set("category", category);
+    if (status) params.set("status", status);
+    params.set("page", String(page));
+
+    try {
+      const res = await fetch(`/api/products?${params}`);
+      const json = await res.json();
+      setData(json);
+    } catch {
+      // silently fail
+    } finally {
+      setLoading(false);
+    }
+  }, [search, category, status, page]);
+
+  useEffect(() => {
+    const timeout = setTimeout(fetchProducts, 300);
+    return () => clearTimeout(timeout);
+  }, [fetchProducts]);
+
+  async function handleDelete(id: string, name: string) {
+    if (!confirm(`Delete "${name}"? This action cannot be undone.`)) return;
+
+    setDeleting(id);
+    try {
+      await fetch(`/api/products/${id}`, { method: "DELETE" });
+      fetchProducts();
+    } catch {
+      // silently fail
+    } finally {
+      setDeleting(null);
+    }
+  }
+
+  function formatPrice(price: number) {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(price);
+  }
+
+  return (
+    <div>
+      {/* Filters */}
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row">
+        <div className="flex-1">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Search by name or SKU..."
+            className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+          />
+        </div>
+        <select
+          value={category}
+          onChange={(e) => {
+            setCategory(e.target.value);
+            setPage(1);
+          }}
+          className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+        >
+          <option value="">All Categories</option>
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        <select
+          value={status}
+          onChange={(e) => {
+            setStatus(e.target.value);
+            setPage(1);
+          }}
+          className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+        >
+          <option value="">All Status</option>
+          <option value="available">Available</option>
+          <option value="sold">Sold</option>
+        </select>
+      </div>
+
+      {/* Table */}
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-gray-100 bg-gray-50">
+                <th className="px-5 py-3 font-medium text-gray-500">Product</th>
+                <th className="px-5 py-3 font-medium text-gray-500">SKU</th>
+                <th className="px-5 py-3 font-medium text-gray-500">Category</th>
+                <th className="px-5 py-3 font-medium text-gray-500">Price</th>
+                <th className="px-5 py-3 font-medium text-gray-500">Status</th>
+                <th className="px-5 py-3 font-medium text-gray-500">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="border-b border-gray-50">
+                    {Array.from({ length: 6 }).map((_, j) => (
+                      <td key={j} className="px-5 py-4">
+                        <div className="h-4 w-20 animate-pulse rounded bg-gray-100" />
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : data.products.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-5 py-12 text-center text-gray-400">
+                    No products found
+                  </td>
+                </tr>
+              ) : (
+                data.products.map((product, i) => (
+                  <motion.tr
+                    key={product.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: i * 0.03 }}
+                    className="border-b border-gray-50 transition-colors hover:bg-gray-50/50"
+                  >
+                    <td className="px-5 py-4">
+                      <div>
+                        <p className="font-medium text-gray-900">{product.name}</p>
+                        {product.purity && (
+                          <p className="text-xs text-gray-400">{product.purity} · {product.weight}g</p>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 font-mono text-xs text-gray-500">
+                      {product.sku}
+                    </td>
+                    <td className="px-5 py-4 text-gray-600">{product.category}</td>
+                    <td className="px-5 py-4 font-medium text-gray-900">
+                      {formatPrice(product.price)}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          product.status === "available"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-amber-50 text-amber-700"
+                        }`}
+                      >
+                        {product.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/admin/products/edit/${product.id}`}
+                          className="rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                        >
+                          Edit
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(product.id, product.name)}
+                          disabled={deleting === product.id}
+                          className="rounded-md px-2.5 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
+                        >
+                          {deleting === product.id ? "..." : "Delete"}
+                        </button>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Pagination */}
+      {data.pages > 1 && (
+        <div className="mt-4 flex items-center justify-between">
+          <p className="text-sm text-gray-500">
+            {data.total} product{data.total !== 1 && "s"} total
+          </p>
+          <div className="flex gap-1">
+            {Array.from({ length: data.pages }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setPage(i + 1)}
+                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                  page === i + 1
+                    ? "bg-gray-900 text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
