@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint"
   },
@@ -13,6 +13,7 @@
     "@prisma/client": "^7.6.0",
     "dotenv": "^17.4.0",
     "framer-motion": "^12.38.0",
+    "html5-qrcode": "^2.3.8",
     "jose": "^6.2.2",
     "jsbarcode": "^3.12.3",
     "next": "16.2.2",
