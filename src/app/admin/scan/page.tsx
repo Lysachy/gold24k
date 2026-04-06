@@ -52,6 +52,7 @@ export default function ScanPage() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState("");
+  const [markingSold, setMarkingSold] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanRegionId = "barcode-scanner";
 
@@ -239,7 +240,32 @@ export default function ScanPage() {
                     )}
                   </div>
 
-                  <div className="mt-4 flex gap-2">
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {product.status === "available" && (
+                      <button
+                        onClick={async () => {
+                          setMarkingSold(true);
+                          try {
+                            const res = await fetch(`/api/products/${product.id}`, {
+                              method: "PUT",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ ...product, status: "sold" }),
+                            });
+                            if (res.ok) {
+                              setProduct({ ...product, status: "sold" });
+                            }
+                          } catch (err) {
+                            console.error(err);
+                          } finally {
+                            setMarkingSold(false);
+                          }
+                        }}
+                        disabled={markingSold}
+                        className="rounded-lg bg-amber-600 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-amber-700 disabled:opacity-50"
+                      >
+                        {markingSold ? "Updating..." : "Tandai Sold"}
+                      </button>
+                    )}
                     <Link
                       href={`/admin/products/edit/${product.id}`}
                       className="rounded-lg bg-gray-900 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-gray-800"

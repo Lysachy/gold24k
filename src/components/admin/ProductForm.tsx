@@ -133,12 +133,14 @@ export default function ProductForm({ product }: { product?: ProductData }) {
               }}
               options={CATEGORIES}
             />
-            <SelectField
-              label="Status"
-              value={form.status}
-              onChange={(v) => update("status", v)}
-              options={["available", "sold"]}
-            />
+            {isEdit && (
+              <SelectField
+                label="Status"
+                value={form.status}
+                onChange={(v) => update("status", v)}
+                options={["available", "sold"]}
+              />
+            )}
           </div>
         </fieldset>
 
