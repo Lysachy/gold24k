@@ -1,3 +1,89 @@
+# Catalog Page Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Build a `/catalog` page with dynamic category tabs, search bar, product grid, and load-more pagination — all fetching from the Prisma/PostgreSQL database.
+
+**Architecture:** Client component page that fetches products from existing `/api/products` endpoint and a new `/api/products/categories` endpoint. Category tabs and search bar filter results; "Load More" appends the next page of results. Reuses existing `ProductCard`, `SectionWrapper`, and `Footer` components.
+
+**Tech Stack:** Next.js 16 (App Router), Tailwind CSS v4, Framer Motion, Prisma ORM, PostgreSQL
+
+---
+
+## File Structure
+
+| Action | File | Responsibility |
+|--------|------|----------------|
+| Create | `src/app/api/products/categories/route.ts` | API: return distinct product categories from DB |
+| Create | `src/app/catalog/page.tsx` | Catalog page with search, category tabs, product grid, load more |
+
+Reused (no changes):
+- `src/components/ProductCard.tsx` — individual product card
+- `src/components/SectionWrapper.tsx` — section animation wrapper
+- `src/components/Footer.tsx` — page footer
+- `src/lib/prisma.ts` — Prisma client instance
+- `src/app/api/products/route.ts` — existing products API with search/category/pagination
+
+---
+
+### Task 1: Categories API Endpoint
+
+**Files:**
+- Create: `src/app/api/products/categories/route.ts`
+
+- [ ] **Step 1: Create the categories route handler**
+
+```ts
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export async function GET() {
+  try {
+    const categories = await prisma.product.findMany({
+      where: { status: "available" },
+      select: { category: true },
+      distinct: ["category"],
+      orderBy: { category: "asc" },
+    });
+
+    return NextResponse.json(categories.map((c) => c.category));
+  } catch (error) {
+    console.error("GET /api/products/categories error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch categories" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+- [ ] **Step 2: Verify endpoint works**
+
+Run: `curl http://localhost:3000/api/products/categories`
+Expected: JSON array of category strings, e.g. `["Bracelets","Earrings","Necklaces","Rings"]`
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/app/api/products/categories/route.ts
+git commit -m "feat: add categories API endpoint"
+```
+
+---
+
+### Task 2: Catalog Page
+
+**Files:**
+- Create: `src/app/catalog/page.tsx`
+
+- [ ] **Step 1: Create the catalog page component**
+
+This is a `"use client"` page that:
+1. Fetches categories from `/api/products/categories` on mount
+2. Fetches products from `/api/products` with current filters (category, search, page)
+3. Renders a header section, search input, category tabs, product grid, and load more button
+
+```tsx
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -11,7 +97,6 @@ interface Product {
   price: number;
   imageUrl: string | null;
   category: string;
-  purity: string | null;
 }
 
 interface ProductsResponse {
@@ -212,12 +297,11 @@ export default function CatalogPage() {
                     <ProductCard
                       key={product.id}
                       name={product.name}
-                      price={`Rp ${product.price.toLocaleString("id-ID")}`}
+                      price={`$${product.price.toLocaleString()}`}
                       image={
                         product.imageUrl ||
                         "https://images.unsplash.com/photo-1515562141589-67f0d569b6c4?w=600&q=80"
                       }
-                      purity={product.purity}
                       index={index}
                     />
                   ))}
@@ -256,3 +340,61 @@ export default function CatalogPage() {
     </main>
   );
 }
+```
+
+- [ ] **Step 2: Verify the page renders**
+
+Run: Open `http://localhost:3000/catalog` in browser.
+Expected: Header with "Our Catalog", search bar, category tabs (All + dynamic categories), product grid from DB, Load More button if > 12 products.
+
+- [ ] **Step 3: Test interactions**
+
+1. Click a category tab → grid filters to that category
+2. Type in search bar → grid updates after 300ms debounce
+3. Click Load More → more products append to grid
+4. Search with no results → "No pieces found" empty state
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/app/catalog/page.tsx
+git commit -m "feat: add catalog page with search, category filter, and load more"
+```
+
+---
+
+### Task 3: Link Catalog from Landing Page
+
+**Files:**
+- Modify: `src/components/CatalogPreview.tsx`
+
+- [ ] **Step 1: Add a "View Full Catalog" link to CatalogPreview**
+
+Add a Link import and a button at the bottom of the CatalogPreview section, after the horizontal scroll div:
+
+```tsx
+// Add import at top:
+import Link from "next/link";
+
+// Add after the closing </div> of the horizontal scroll container, before </SectionWrapper>:
+<div className="mt-12 text-center">
+  <Link
+    href="/catalog"
+    className="inline-block rounded-full border border-charcoal/20 px-10 py-3 text-xs tracking-[0.2em] uppercase text-charcoal transition-all duration-500 hover:border-charcoal hover:bg-charcoal hover:text-ivory"
+  >
+    View Full Catalog
+  </Link>
+</div>
+```
+
+- [ ] **Step 2: Verify the link works**
+
+Run: Open `http://localhost:3000`, scroll to Signature Catalog section.
+Expected: "View Full Catalog" button appears below the category cards. Clicking it navigates to `/catalog`.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/components/CatalogPreview.tsx
+git commit -m "feat: add link to full catalog from landing page"
+```

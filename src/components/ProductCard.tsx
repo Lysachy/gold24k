@@ -8,6 +8,7 @@ interface ProductCardProps {
   price: string;
   image: string;
   index: number;
+  purity?: string | null;
 }
 
 export default function ProductCard({
@@ -15,6 +16,7 @@ export default function ProductCard({
   price,
   image,
   index,
+  purity,
 }: ProductCardProps) {
   return (
     <motion.div
@@ -33,13 +35,18 @@ export default function ProductCard({
           sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-charcoal/0 transition-colors duration-500 group-hover:bg-charcoal/10" />
-      </div>
-      <div className="mt-5 space-y-1">
-        <h3 className="font-serif text-lg tracking-wide text-charcoal">
-          {name}
-        </h3>
-        <p className="text-sm tracking-widest text-charcoal/60">{price}</p>
+        {purity && (
+          <div className="absolute top-3 right-3 flex h-12 w-12 items-center justify-center rounded-full bg-gold/90 backdrop-blur-sm">
+            <span className="text-base font-bold tracking-wide text-ivory">{purity}</span>
+          </div>
+        )}
+        <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-charcoal/90 to-transparent transition-opacity duration-500 group-hover:from-charcoal" />
+        <div className="absolute bottom-0 left-0 p-5">
+          <h3 className="text-sm font-semibold tracking-[0.15em] uppercase text-ivory">
+            {name}
+          </h3>
+          <p className="mt-1 text-sm font-medium tracking-widest text-ivory/70">{price}</p>
+        </div>
       </div>
     </motion.div>
   );

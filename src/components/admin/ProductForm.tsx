@@ -20,6 +20,23 @@ interface ProductData {
 
 const CATEGORIES = ["Ring", "Necklace", "Bracelet", "Earring", "Bar", "Coin", "Pendant", "Other"];
 
+const CATEGORY_PREFIX: Record<string, string> = {
+  Ring: "RNG",
+  Necklace: "NCK",
+  Bracelet: "BRC",
+  Earring: "ERG",
+  Bar: "BAR",
+  Coin: "CON",
+  Pendant: "PDT",
+  Other: "OTH",
+};
+
+function generateSku(category: string): string {
+  const prefix = CATEGORY_PREFIX[category] || "OTH";
+  const timestamp = Date.now().toString().slice(-8);
+  return `${prefix}-${timestamp}`;
+}
+
 const emptyProduct: ProductData = {
   name: "",
   sku: "",
@@ -104,8 +121,18 @@ export default function ProductForm({ product }: { product?: ProductData }) {
           </legend>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <InputField label="Name *" value={form.name} onChange={(v) => update("name", v)} placeholder="Gold Ring 24K" />
-            <InputField label="SKU *" value={form.sku} onChange={(v) => update("sku", v)} placeholder="GR-24K-001" />
-            <SelectField label="Category *" value={form.category} onChange={(v) => update("category", v)} options={CATEGORIES} />
+            <InputField label="SKU *" value={form.sku} onChange={(v) => update("sku", v)} placeholder="Auto-generated" disabled={!isEdit} />
+            <SelectField
+              label="Category *"
+              value={form.category}
+              onChange={(v) => {
+                update("category", v);
+                if (!isEdit && v) {
+                  setForm((prev) => ({ ...prev, category: v, sku: generateSku(v) }));
+                }
+              }}
+              options={CATEGORIES}
+            />
             <SelectField
               label="Status"
               value={form.status}
