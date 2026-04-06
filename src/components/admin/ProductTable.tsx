@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import JsBarcode from "jsbarcode";
@@ -24,6 +24,37 @@ interface ProductResponse {
 }
 
 const CATEGORIES = ["Ring", "Necklace", "Bracelet", "Earring", "Bar", "Coin", "Pendant", "Other"];
+
+function skuToEan13(sku: string): string {
+  let hash = 0;
+  for (let i = 0; i < sku.length; i++) {
+    hash = (hash * 31 + sku.charCodeAt(i)) % 1000000000000;
+  }
+  const digits12 = String(hash).padStart(12, "0").slice(0, 12);
+  let sum = 0;
+  for (let i = 0; i < 12; i++) {
+    sum += parseInt(digits12[i]) * (i % 2 === 0 ? 1 : 3);
+  }
+  const checkDigit = (10 - (sum % 10)) % 10;
+  return digits12 + checkDigit;
+}
+
+function downloadBarcode(sku: string, productName: string) {
+  const canvas = document.createElement("canvas");
+  const ean = skuToEan13(sku);
+  JsBarcode(canvas, ean, {
+    format: "EAN13",
+    width: 2,
+    height: 80,
+    displayValue: true,
+    fontSize: 14,
+    margin: 10,
+  });
+  const link = document.createElement("a");
+  link.download = `barcode-${sku}.png`;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
 
 export default function ProductTable() {
   const [data, setData] = useState<ProductResponse>({
@@ -202,6 +233,12 @@ export default function ProductTable() {
                         >
                           Edit
                         </Link>
+                        <button
+                          onClick={() => downloadBarcode(product.sku, product.name)}
+                          className="rounded-md px-2.5 py-1.5 text-xs font-medium text-amber-600 transition-colors hover:bg-amber-50 hover:text-amber-700"
+                        >
+                          Barcode
+                        </button>
                         <button
                           onClick={() => handleDelete(product.id, product.name)}
                           disabled={deleting === product.id}
