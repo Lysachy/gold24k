@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import SectionWrapper from "./SectionWrapper";
 import { catalogCategories } from "@/lib/data";
 
@@ -63,6 +64,15 @@ export default function CatalogPreview() {
             </div>
           </motion.div>
         ))}
+      </div>
+
+      <div className="mt-12 text-center">
+        <Link
+          href="/catalog"
+          className="inline-block rounded-full border border-charcoal/20 px-10 py-3 text-xs tracking-[0.2em] uppercase text-charcoal transition-all duration-500 hover:border-charcoal hover:bg-charcoal hover:text-ivory"
+        >
+          View Full Catalog
+        </Link>
       </div>
     </SectionWrapper>
   );
