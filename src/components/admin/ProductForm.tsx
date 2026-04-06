@@ -233,12 +233,14 @@ function InputField({
   onChange,
   placeholder,
   type = "text",
+  disabled = false,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
   type?: string;
+  disabled?: boolean;
 }) {
   return (
     <div>
@@ -250,8 +252,9 @@ function InputField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        disabled={disabled}
         step={type === "number" ? "any" : undefined}
-        className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-amber-400 focus:bg-white focus:ring-1 focus:ring-amber-400"
+        className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-amber-400 focus:bg-white focus:ring-1 focus:ring-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
       />
     </div>
   );

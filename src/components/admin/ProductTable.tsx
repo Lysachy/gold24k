@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import JsBarcode from "jsbarcode";
 
 interface Product {
   id: string;
