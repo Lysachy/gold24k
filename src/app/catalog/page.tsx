@@ -12,6 +12,7 @@ interface Product {
   imageUrl: string | null;
   category: string;
   purity: string | null;
+  weight: number | null;
 }
 
 interface ProductsResponse {
@@ -215,6 +216,7 @@ export default function CatalogPage() {
                       price=""
                       image={product.imageUrl || ""}
                       purity={product.purity}
+                      weight={product.weight}
                       index={index}
                     />
                   ))}

@@ -9,6 +9,7 @@ interface ProductCardProps {
   image: string;
   index: number;
   purity?: string | null;
+  weight?: number | null;
 }
 
 export default function ProductCard({
@@ -17,6 +18,7 @@ export default function ProductCard({
   image,
   index,
   purity,
+  weight,
 }: ProductCardProps) {
   return (
     <motion.div
@@ -53,7 +55,11 @@ export default function ProductCard({
           <h3 className="text-sm font-semibold tracking-[0.15em] uppercase text-ivory">
             {name}
           </h3>
-          {price && <p className="mt-1 text-sm font-medium tracking-widest text-ivory/70">{price}</p>}
+          {(purity || weight) && (
+            <p className="mt-1 text-xs font-medium tracking-widest text-ivory/70">
+              {[purity, weight ? `${weight}g` : null].filter(Boolean).join(" · ")}
+            </p>
+          )}
         </div>
       </div>
     </motion.div>
