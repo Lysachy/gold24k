@@ -93,16 +93,16 @@ export default function AdminDashboard() {
 
   const cards = [
     { label: "Total Produk", value: stats.total, color: "bg-gray-900" },
-    { label: "Available", value: stats.available, color: "bg-emerald-600" },
-    { label: "Sold", value: stats.sold, color: "bg-amber-600" },
+    { label: "Tersedia", value: stats.available, color: "bg-emerald-600" },
+    { label: "Terjual", value: stats.sold, color: "bg-amber-600" },
     { label: "Total Pendapatan", value: formatPrice(stats.totalRevenue), color: "bg-blue-600" },
   ];
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+      <h1 className="text-2xl font-semibold text-gray-900">Dasbor</h1>
       <p className="mt-1 text-sm text-gray-500">
-        Overview of your jewelry catalog
+        Ringkasan katalog perhiasan
       </p>
 
       {/* Stats Cards */}
@@ -184,7 +184,7 @@ export default function AdminDashboard() {
                 ) : stats.soldProducts.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="px-5 py-12 text-center text-gray-400">
-                      Belum ada produk terjual
+                      Belum ada penjualan
                     </td>
                   </tr>
                 ) : (

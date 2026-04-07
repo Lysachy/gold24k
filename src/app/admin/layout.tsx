@@ -7,7 +7,7 @@ import { useState } from "react";
 
 const navItems = [
   {
-    label: "Dashboard",
+    label: "Dasbor",
     href: "/admin",
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -16,7 +16,7 @@ const navItems = [
     ),
   },
   {
-    label: "Products",
+    label: "Produk",
     href: "/admin/products",
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -127,7 +127,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </svg>
           </button>
           <div className="flex-1" />
-          <span className="text-xs text-gray-400">Admin Panel</span>
+          <span className="text-xs text-gray-400">Panel Admin</span>
         </header>
 
         {/* Page content */}

@@ -26,7 +26,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           imageUrl: data.imageUrl || "",
         });
       })
-      .catch(() => setError("Failed to load product"))
+      .catch(() => setError("Gagal memuat produk"))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -41,7 +41,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   if (error || !product) {
     return (
       <div className="py-20 text-center text-gray-500">
-        {error || "Product not found"}
+        {error || "Produk tidak ditemukan"}
       </div>
     );
   }
@@ -49,9 +49,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Edit Product</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Edit Produk</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Update product information
+          Perbarui informasi produk
         </p>
       </div>
 
