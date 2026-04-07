@@ -212,11 +212,8 @@ export default function CatalogPage() {
                     <ProductCard
                       key={product.id}
                       name={product.name}
-                      price={`Rp ${product.price.toLocaleString("id-ID")}`}
-                      image={
-                        product.imageUrl ||
-                        "https://images.unsplash.com/photo-1515562141589-67f0d569b6c4?w=600&q=80"
-                      }
+                      price=""
+                      image={product.imageUrl || ""}
                       purity={product.purity}
                       index={index}
                     />
