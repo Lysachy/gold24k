@@ -70,7 +70,7 @@ export default function ProductTable() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [sellingId, setSellingId] = useState<string | null>(null);
+  const [sellTarget, setSellTarget] = useState<Product | null>(null);
   const [sellPrice, setSellPrice] = useState("");
   const [markingSold, setMarkingSold] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
@@ -99,16 +99,16 @@ export default function ProductTable() {
     return () => clearTimeout(timeout);
   }, [fetchProducts]);
 
-  async function handleSold(product: Product) {
-    if (!sellPrice || isNaN(Number(sellPrice)) || Number(sellPrice) <= 0) return;
+  async function handleSold() {
+    if (!sellTarget || !sellPrice || isNaN(Number(sellPrice)) || Number(sellPrice) <= 0) return;
     setMarkingSold(true);
     try {
-      await fetch(`/api/products/${product.id}`, {
+      await fetch(`/api/products/${sellTarget.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...product, price: Number(sellPrice), status: "sold" }),
+        body: JSON.stringify({ ...sellTarget, price: Number(sellPrice), status: "sold" }),
       });
-      setSellingId(null);
+      setSellTarget(null);
       setSellPrice("");
       fetchProducts();
     } catch {
@@ -252,7 +252,7 @@ export default function ProductTable() {
                       <div className="flex items-center gap-2">
                         {product.status === "available" && (
                           <button
-                            onClick={() => { setSellingId(product.id); setSellPrice(""); }}
+                            onClick={() => { setSellTarget(product); setSellPrice(""); }}
                             className="rounded-md px-2.5 py-1.5 text-xs font-medium text-emerald-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
                           >
                             Sold
@@ -280,36 +280,6 @@ export default function ProductTable() {
                       </div>
                     </td>
                   </motion.tr>
-                  {sellingId === product.id && (
-                    <tr className="border-b border-gray-50 bg-amber-50/50">
-                      <td colSpan={6} className="px-5 py-3">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-medium text-amber-700">Harga Jual (Rp):</span>
-                          <input
-                            type="number"
-                            value={sellPrice}
-                            onChange={(e) => setSellPrice(e.target.value)}
-                            placeholder="Masukkan harga..."
-                            className="w-48 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                            autoFocus
-                          />
-                          <button
-                            onClick={() => handleSold(product)}
-                            disabled={markingSold || !sellPrice}
-                            className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-amber-700 disabled:opacity-50"
-                          >
-                            {markingSold ? "..." : "Konfirmasi"}
-                          </button>
-                          <button
-                            onClick={() => { setSellingId(null); setSellPrice(""); }}
-                            className="rounded-md px-3 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100"
-                          >
-                            Batal
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
                   </React.Fragment>
                 ))
               )}
@@ -341,6 +311,56 @@ export default function ProductTable() {
           </div>
         </div>
       )}
+      {/* Sold Price Modal */}
+      {sellTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/40" onClick={() => setSellTarget(null)} />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative z-10 w-full max-w-sm rounded-xl border border-gray-200 bg-white p-6 shadow-lg"
+          >
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-50">
+              <svg className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Tandai Terjual</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              <span className="font-medium text-gray-700">{sellTarget.name}</span> — {sellTarget.sku}
+            </p>
+            <div className="mt-4">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500">
+                Harga Jual (Rp)
+              </label>
+              <input
+                type="number"
+                value={sellPrice}
+                onChange={(e) => setSellPrice(e.target.value)}
+                placeholder="Masukkan harga jual..."
+                autoFocus
+                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-amber-400 focus:bg-white focus:ring-1 focus:ring-amber-400"
+              />
+            </div>
+            <div className="mt-6 flex gap-3 justify-end">
+              <button
+                onClick={() => { setSellTarget(null); setSellPrice(""); }}
+                className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleSold}
+                disabled={markingSold || !sellPrice}
+                className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700 disabled:opacity-50"
+              >
+                {markingSold ? "Menyimpan..." : "Konfirmasi Sold"}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
