@@ -10,6 +10,7 @@ interface ProductCardProps {
   index: number;
   purity?: string | null;
   weight?: number | null;
+  material?: string | null;
 }
 
 export default function ProductCard({
@@ -19,6 +20,7 @@ export default function ProductCard({
   index,
   purity,
   weight,
+  material,
 }: ProductCardProps) {
   return (
     <motion.div
@@ -53,7 +55,7 @@ export default function ProductCard({
         <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-charcoal/90 to-transparent transition-opacity duration-500 group-hover:from-charcoal" />
         <div className="absolute bottom-0 left-0 p-5">
           <h3 className="text-sm font-semibold tracking-[0.15em] uppercase text-ivory">
-            {name}
+            {name}{material && <span className="ml-1 font-normal text-ivory/60">— {material}</span>}
           </h3>
           {(purity || weight) && (
             <p className="mt-1 text-xs font-medium tracking-widest text-ivory/70">
