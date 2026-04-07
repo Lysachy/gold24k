@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import JsBarcode from "jsbarcode";
@@ -72,6 +72,7 @@ export default function ProductTable() {
   const [sellingId, setSellingId] = useState<string | null>(null);
   const [sellPrice, setSellPrice] = useState("");
   const [markingSold, setMarkingSold] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -116,17 +117,17 @@ export default function ProductTable() {
     }
   }
 
-  async function handleDelete(id: string, name: string) {
-    if (!confirm(`Delete "${name}"? This action cannot be undone.`)) return;
-
-    setDeleting(id);
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    setDeleting(deleteTarget.id);
     try {
-      await fetch(`/api/products/${id}`, { method: "DELETE" });
+      await fetch(`/api/products/${deleteTarget.id}`, { method: "DELETE" });
       fetchProducts();
     } catch {
       // silently fail
     } finally {
       setDeleting(null);
+      setDeleteTarget(null);
     }
   }
 
@@ -269,7 +270,7 @@ export default function ProductTable() {
                           Barcode
                         </button>
                         <button
-                          onClick={() => handleDelete(product.id, product.name)}
+                          onClick={() => setDeleteTarget({ id: product.id, name: product.name })}
                           disabled={deleting === product.id}
                           className="rounded-md px-2.5 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
                         >
@@ -337,6 +338,42 @@ export default function ProductTable() {
               </button>
             ))}
           </div>
+        </div>
+      )}
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/40" onClick={() => setDeleteTarget(null)} />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative z-10 w-full max-w-sm rounded-xl border border-gray-200 bg-white p-6 shadow-lg"
+          >
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+              <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Hapus Produk</h3>
+            <p className="mt-2 text-sm text-gray-500">
+              Yakin ingin menghapus <span className="font-medium text-gray-700">&quot;{deleteTarget.name}&quot;</span>? Tindakan ini tidak bisa dibatalkan.
+            </p>
+            <div className="mt-6 flex gap-3 justify-end">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting === deleteTarget.id}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleting === deleteTarget.id ? "Menghapus..." : "Ya, Hapus"}
+              </button>
+            </div>
+          </motion.div>
         </div>
       )}
     </div>

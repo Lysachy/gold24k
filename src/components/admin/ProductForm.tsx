@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { categoryLabel, statusLabel } from "@/lib/id-labels";
 
 interface ProductData {
   id?: string;
@@ -70,12 +71,12 @@ export default function ProductForm({ product }: { product?: ProductData }) {
     setSuccess("");
 
     if (!form.name || !form.sku || !form.category) {
-      setError("Please fill in all required fields");
+      setError("Harap isi semua field yang wajib");
       return;
     }
 
     if (form.weight && (isNaN(Number(form.weight)) || Number(form.weight) <= 0)) {
-      setError("Weight must be a positive number");
+      setError("Berat harus berupa angka positif");
       return;
     }
 
@@ -93,14 +94,14 @@ export default function ProductForm({ product }: { product?: ProductData }) {
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "Failed to save product");
+        setError(data.error || "Gagal menyimpan produk");
         return;
       }
 
-      setSuccess(isEdit ? "Product updated!" : "Product created!");
+      setSuccess(isEdit ? "Produk berhasil diperbarui!" : "Produk berhasil ditambahkan!");
       setTimeout(() => router.push("/admin/products"), 1000);
     } catch {
-      setError("Something went wrong");
+      setError("Terjadi kesalahan");
     } finally {
       setLoading(false);
     }
@@ -109,16 +110,16 @@ export default function ProductForm({ product }: { product?: ProductData }) {
   return (
     <form onSubmit={handleSubmit} className="mx-auto max-w-2xl">
       <div className="rounded-xl border border-gray-200 bg-white p-6">
-        {/* Basic Info */}
+        {/* Informasi Dasar */}
         <fieldset>
           <legend className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">
-            Basic Information
+            Informasi Dasar
           </legend>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <InputField label="Name *" value={form.name} onChange={(v) => update("name", v)} placeholder="Gold Ring 24K" />
-            <InputField label="SKU *" value={form.sku} onChange={(v) => update("sku", v)} placeholder="Auto-generated" disabled={!isEdit} />
+            <InputField label="Nama *" value={form.name} onChange={(v) => update("name", v)} placeholder="Cincin Emas 24K" />
+            <InputField label="SKU *" value={form.sku} onChange={(v) => update("sku", v)} placeholder="Otomatis" disabled={!isEdit} />
             <SelectField
-              label="Category *"
+              label="Kategori *"
               value={form.category}
               onChange={(v) => {
                 update("category", v);
@@ -127,6 +128,7 @@ export default function ProductForm({ product }: { product?: ProductData }) {
                 }
               }}
               options={CATEGORIES}
+              labelFn={categoryLabel}
             />
             {isEdit && (
               <SelectField
@@ -134,6 +136,7 @@ export default function ProductForm({ product }: { product?: ProductData }) {
                 value={form.status}
                 onChange={(v) => update("status", v)}
                 options={["available", "sold"]}
+                labelFn={statusLabel}
               />
             )}
           </div>
@@ -141,15 +144,15 @@ export default function ProductForm({ product }: { product?: ProductData }) {
 
         <hr className="my-6 border-gray-100" />
 
-        {/* Details */}
+        {/* Detail */}
         <fieldset>
           <legend className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">
-            Details
+            Detail
           </legend>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <InputField label="Material" value={form.material} onChange={(v) => update("material", v)} placeholder="Gold" />
-            <InputField label="Purity" value={form.purity} onChange={(v) => update("purity", v)} placeholder="24K" />
-            <InputField label="Weight (g)" value={form.weight} onChange={(v) => update("weight", v)} placeholder="10.5" type="number" />
+            <InputField label="Material" value={form.material} onChange={(v) => update("material", v)} placeholder="Emas" />
+            <InputField label="Kadar" value={form.purity} onChange={(v) => update("purity", v)} placeholder="24K" />
+            <InputField label="Berat (g)" value={form.weight} onChange={(v) => update("weight", v)} placeholder="10.5" type="number" />
           </div>
         </fieldset>
 
