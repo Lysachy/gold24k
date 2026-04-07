@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import JsBarcode from "jsbarcode";
+import { categoryLabel, statusLabel } from "@/lib/id-labels";
 
 interface Product {
   id: string;

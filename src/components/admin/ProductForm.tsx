@@ -164,18 +164,18 @@ export default function ProductForm({ product }: { product?: ProductData }) {
             Media
           </legend>
           <div className="grid grid-cols-1 gap-4">
-            <InputField label="Image URL" value={form.imageUrl} onChange={(v) => update("imageUrl", v)} placeholder="https://..." />
+            <InputField label="URL Gambar" value={form.imageUrl} onChange={(v) => update("imageUrl", v)} placeholder="https://..." />
           </div>
           <div className="mt-4">
             <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500">
-              Description
+              Deskripsi
             </label>
             <textarea
               value={form.description}
               onChange={(e) => update("description", e.target.value)}
               rows={3}
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-amber-400 focus:bg-white focus:ring-1 focus:ring-amber-400"
-              placeholder="Product description..."
+              placeholder="Deskripsi produk..."
             />
           </div>
         </fieldset>
@@ -200,7 +200,7 @@ export default function ProductForm({ product }: { product?: ProductData }) {
           onClick={() => router.back()}
           className="rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
         >
-          Cancel
+          Batal
         </button>
         <button
           type="submit"
@@ -213,12 +213,12 @@ export default function ProductForm({ product }: { product?: ProductData }) {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              Saving...
+              Menyimpan...
             </span>
           ) : isEdit ? (
-            "Update Product"
+            "Perbarui Produk"
           ) : (
-            "Create Product"
+            "Tambah Produk"
           )}
         </button>
       </div>
@@ -264,11 +264,13 @@ function SelectField({
   value,
   onChange,
   options,
+  labelFn,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   options: string[];
+  labelFn?: (v: string) => string;
 }) {
   return (
     <div>
@@ -280,10 +282,10 @@ function SelectField({
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-amber-400 focus:bg-white focus:ring-1 focus:ring-amber-400"
       >
-        <option value="">Select...</option>
+        <option value="">Pilih...</option>
         {options.map((opt) => (
           <option key={opt} value={opt}>
-            {opt.charAt(0).toUpperCase() + opt.slice(1)}
+            {labelFn ? labelFn(opt) : opt.charAt(0).toUpperCase() + opt.slice(1)}
           </option>
         ))}
       </select>
