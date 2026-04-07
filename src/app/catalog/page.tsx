@@ -214,7 +214,6 @@ export default function CatalogPage() {
                     <ProductCard
                       key={product.id}
                       name={product.name}
-                      price=""
                       image={product.imageUrl || ""}
                       purity={product.purity}
                       weight={product.weight}

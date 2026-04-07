@@ -2,10 +2,10 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { normalizeImageUrl } from "@/lib/image-url";
 
 interface ProductCardProps {
   name: string;
-  price: string;
   image: string;
   index: number;
   purity?: string | null;
@@ -15,13 +15,14 @@ interface ProductCardProps {
 
 export default function ProductCard({
   name,
-  price,
   image,
   index,
   purity,
   weight,
   material,
 }: ProductCardProps) {
+  const imageSrc = normalizeImageUrl(image);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -32,9 +33,9 @@ export default function ProductCard({
       className="group cursor-pointer"
     >
       <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-taupe">
-        {image ? (
+        {imageSrc ? (
           <Image
-            src={image}
+            src={imageSrc}
             alt={name}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"

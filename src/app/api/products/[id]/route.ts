@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { normalizeImageUrl } from "@/lib/image-url";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
@@ -59,7 +60,7 @@ export async function PUT(
         weight: body.weight ? parseFloat(body.weight) : null,
         price: parseFloat(body.price),
         description: body.description || null,
-        imageUrl: body.imageUrl || null,
+        imageUrl: normalizeImageUrl(body.imageUrl) || null,
         status: body.status || "available",
       },
     });

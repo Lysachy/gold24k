@@ -40,7 +40,7 @@ function skuToEan13(sku: string): string {
   return digits12 + checkDigit;
 }
 
-function downloadBarcode(sku: string, productName: string) {
+function downloadBarcode(sku: string) {
   const canvas = document.createElement("canvas");
   const ean = skuToEan13(sku);
   JsBarcode(canvas, ean, {
@@ -265,7 +265,7 @@ export default function ProductTable() {
                           Edit
                         </Link>
                         <button
-                          onClick={() => downloadBarcode(product.sku, product.name)}
+                          onClick={() => downloadBarcode(product.sku)}
                           className="rounded-md px-2.5 py-1.5 text-xs font-medium text-amber-600 transition-colors hover:bg-amber-50 hover:text-amber-700"
                         >
                           Barcode

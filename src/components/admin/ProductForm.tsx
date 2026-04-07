@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { categoryLabel, statusLabel } from "@/lib/id-labels";
+import { isValidImageUrl, normalizeImageUrl } from "@/lib/image-url";
 
 interface ProductData {
   id?: string;
@@ -54,7 +55,11 @@ const emptyProduct: ProductData = {
 export default function ProductForm({ product }: { product?: ProductData }) {
   const router = useRouter();
   const isEdit = !!product?.id;
-  const [form, setForm] = useState<ProductData>(product || emptyProduct);
+  const [form, setForm] = useState<ProductData>(
+    product
+      ? { ...product, imageUrl: normalizeImageUrl(product.imageUrl) }
+      : emptyProduct
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -81,9 +86,16 @@ export default function ProductForm({ product }: { product?: ProductData }) {
       return;
     }
 
+    if (!isValidImageUrl(form.imageUrl)) {
+      setError("URL gambar tidak valid");
+      return;
+    }
+
     setLoading(true);
 
     try {
+      const normalizedImageUrl = normalizeImageUrl(form.imageUrl);
+
       if (!isEdit && imageFile) {
         const formData = new FormData();
         formData.append("file", imageFile);
@@ -105,7 +117,7 @@ export default function ProductForm({ product }: { product?: ProductData }) {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, imageUrl: normalizedImageUrl }),
       });
 
       if (!res.ok) {
@@ -180,9 +192,16 @@ export default function ProductForm({ product }: { product?: ProductData }) {
             Media
           </legend>
           <div className="grid grid-cols-1 gap-4">
-            {isEdit ? (
-              <InputField label="URL Gambar" value={form.imageUrl} onChange={(v) => update("imageUrl", v)} placeholder="https://..." />
-            ) : (
+            <InputField
+              label="URL Gambar"
+              value={form.imageUrl}
+              onChange={(v) => update("imageUrl", normalizeImageUrl(v))}
+              placeholder="https://drive.google.com/file/d/... atau https://..."
+            />
+            <p className="-mt-2 text-xs text-gray-500">
+              Bisa pakai link share Google Drive. Link akan otomatis diubah ke format gambar yang bisa tampil di katalog.
+            </p>
+            {!isEdit && (
               <div>
                 <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500">
                   Ambil / Unggah Gambar
@@ -192,8 +211,8 @@ export default function ProductForm({ product }: { product?: ProductData }) {
                   accept="image/*"
                   capture="environment"
                   onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) setImageFile(file);
+                    const file = e.target.files?.[0] ?? null;
+                    setImageFile(file);
                   }}
                   className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-900 outline-none transition-colors focus:border-amber-400 focus:bg-white focus:ring-1 focus:ring-amber-400 file:mr-4 file:rounded-full file:border-0 file:bg-gray-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-gray-800"
                 />
