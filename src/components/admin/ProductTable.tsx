@@ -152,7 +152,7 @@ export default function ProductTable() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            placeholder="Search by name or SKU..."
+            placeholder="Cari nama atau SKU..."
             className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           />
         </div>
@@ -164,9 +164,9 @@ export default function ProductTable() {
           }}
           className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
         >
-          <option value="">All Categories</option>
+          <option value="">Semua Kategori</option>
           {CATEGORIES.map((c) => (
-            <option key={c} value={c}>{c}</option>
+            <option key={c} value={c}>{categoryLabel(c)}</option>
           ))}
         </select>
         <select
@@ -177,9 +177,9 @@ export default function ProductTable() {
           }}
           className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
         >
-          <option value="">All Status</option>
-          <option value="available">Available</option>
-          <option value="sold">Sold</option>
+          <option value="">Semua Status</option>
+          <option value="available">{statusLabel("available")}</option>
+          <option value="sold">{statusLabel("sold")}</option>
         </select>
       </div>
 
@@ -189,12 +189,12 @@ export default function ProductTable() {
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="px-5 py-3 font-medium text-gray-500">Product</th>
+                <th className="px-5 py-3 font-medium text-gray-500">Produk</th>
                 <th className="px-5 py-3 font-medium text-gray-500">SKU</th>
-                <th className="px-5 py-3 font-medium text-gray-500">Category</th>
-                <th className="px-5 py-3 font-medium text-gray-500">Price</th>
+                <th className="px-5 py-3 font-medium text-gray-500">Kategori</th>
+                <th className="px-5 py-3 font-medium text-gray-500">Harga</th>
                 <th className="px-5 py-3 font-medium text-gray-500">Status</th>
-                <th className="px-5 py-3 font-medium text-gray-500">Actions</th>
+                <th className="px-5 py-3 font-medium text-gray-500">Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -211,7 +211,7 @@ export default function ProductTable() {
               ) : data.products.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-12 text-center text-gray-400">
-                    No products found
+                    Produk tidak ditemukan
                   </td>
                 </tr>
               ) : (
@@ -233,7 +233,7 @@ export default function ProductTable() {
                     <td className="px-5 py-4 font-mono text-xs text-gray-500">
                       {product.sku}
                     </td>
-                    <td className="px-5 py-4 text-gray-600">{product.category}</td>
+                    <td className="px-5 py-4 text-gray-600">{categoryLabel(product.category)}</td>
                     <td className="px-5 py-4 font-medium text-gray-900">
                       {formatPrice(product.price)}
                     </td>
@@ -245,7 +245,7 @@ export default function ProductTable() {
                             : "bg-amber-50 text-amber-700"
                         }`}
                       >
-                        {product.status}
+                        {statusLabel(product.status)}
                       </span>
                     </td>
                     <td className="px-5 py-4">
@@ -322,7 +322,7 @@ export default function ProductTable() {
       {data.pages > 1 && (
         <div className="mt-4 flex items-center justify-between">
           <p className="text-sm text-gray-500">
-            {data.total} product{data.total !== 1 && "s"} total
+            {data.total} produk
           </p>
           <div className="flex gap-1">
             {Array.from({ length: data.pages }).map((_, i) => (
