@@ -58,6 +58,7 @@ export default function ProductForm({ product }: { product?: ProductData }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   function update(field: keyof ProductData, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -83,6 +84,21 @@ export default function ProductForm({ product }: { product?: ProductData }) {
     setLoading(true);
 
     try {
+      if (!isEdit && imageFile) {
+        const formData = new FormData();
+        formData.append("file", imageFile);
+        formData.append("sku", form.sku);
+        
+        const teleRes = await fetch("/api/telegram", {
+          method: "POST",
+          body: formData,
+        });
+        
+        if (!teleRes.ok) {
+          console.error("Failed to send image to Telegram");
+        }
+      }
+
       const url = isEdit ? `/api/products/${product!.id}` : "/api/products";
       const method = isEdit ? "PUT" : "POST";
 
@@ -164,7 +180,25 @@ export default function ProductForm({ product }: { product?: ProductData }) {
             Media
           </legend>
           <div className="grid grid-cols-1 gap-4">
-            <InputField label="URL Gambar" value={form.imageUrl} onChange={(v) => update("imageUrl", v)} placeholder="https://..." />
+            {isEdit ? (
+              <InputField label="URL Gambar" value={form.imageUrl} onChange={(v) => update("imageUrl", v)} placeholder="https://..." />
+            ) : (
+              <div>
+                <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500">
+                  Ambil / Unggah Gambar
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) setImageFile(file);
+                  }}
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-900 outline-none transition-colors focus:border-amber-400 focus:bg-white focus:ring-1 focus:ring-amber-400 file:mr-4 file:rounded-full file:border-0 file:bg-gray-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-gray-800"
+                />
+              </div>
+            )}
           </div>
           <div className="mt-4">
             <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500">
