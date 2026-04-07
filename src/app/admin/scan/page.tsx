@@ -53,6 +53,8 @@ export default function ScanPage() {
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState("");
   const [markingSold, setMarkingSold] = useState(false);
+  const [showPriceInput, setShowPriceInput] = useState(false);
+  const [sellPrice, setSellPrice] = useState("");
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanRegionId = "barcode-scanner";
 
@@ -240,30 +242,67 @@ export default function ScanPage() {
                     )}
                   </div>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {product.status === "available" && (
-                      <button
-                        onClick={async () => {
-                          setMarkingSold(true);
-                          try {
-                            const res = await fetch(`/api/products/${product.id}`, {
-                              method: "PUT",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ ...product, status: "sold" }),
-                            });
-                            if (res.ok) {
-                              setProduct({ ...product, status: "sold" });
+                  {/* Sold Price Input */}
+                  {product.status === "available" && showPriceInput && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4"
+                    >
+                      <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-amber-700">
+                        Harga Jual (Rp)
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          value={sellPrice}
+                          onChange={(e) => setSellPrice(e.target.value)}
+                          placeholder="Masukkan harga jual..."
+                          className="flex-1 rounded-lg border border-amber-300 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                        />
+                        <button
+                          onClick={async () => {
+                            if (!sellPrice || isNaN(Number(sellPrice)) || Number(sellPrice) <= 0) return;
+                            setMarkingSold(true);
+                            try {
+                              const res = await fetch(`/api/products/${product.id}`, {
+                                method: "PUT",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ ...product, price: Number(sellPrice), status: "sold" }),
+                              });
+                              if (res.ok) {
+                                setProduct({ ...product, price: Number(sellPrice), status: "sold" });
+                                setShowPriceInput(false);
+                                setSellPrice("");
+                              }
+                            } catch (err) {
+                              console.error(err);
+                            } finally {
+                              setMarkingSold(false);
                             }
-                          } catch (err) {
-                            console.error(err);
-                          } finally {
-                            setMarkingSold(false);
-                          }
-                        }}
-                        disabled={markingSold}
-                        className="rounded-lg bg-amber-600 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-amber-700 disabled:opacity-50"
+                          }}
+                          disabled={markingSold || !sellPrice}
+                          className="rounded-lg bg-amber-600 px-4 py-2.5 text-xs font-medium text-white transition-colors hover:bg-amber-700 disabled:opacity-50"
+                        >
+                          {markingSold ? "..." : "Konfirmasi"}
+                        </button>
+                        <button
+                          onClick={() => { setShowPriceInput(false); setSellPrice(""); }}
+                          className="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100"
+                        >
+                          Batal
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {product.status === "available" && !showPriceInput && (
+                      <button
+                        onClick={() => setShowPriceInput(true)}
+                        className="rounded-lg bg-amber-600 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-amber-700"
                       >
-                        {markingSold ? "Updating..." : "Tandai Sold"}
+                        Tandai Sold
                       </button>
                     )}
                     <Link
@@ -276,6 +315,8 @@ export default function ScanPage() {
                       onClick={() => {
                         setScannedCode(null);
                         setProduct(null);
+                        setShowPriceInput(false);
+                        setSellPrice("");
                         startScanner();
                       }}
                       className="rounded-lg border border-gray-200 px-4 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"

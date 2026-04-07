@@ -69,6 +69,9 @@ export default function ProductTable() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [sellingId, setSellingId] = useState<string | null>(null);
+  const [sellPrice, setSellPrice] = useState("");
+  const [markingSold, setMarkingSold] = useState(false);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -93,6 +96,25 @@ export default function ProductTable() {
     const timeout = setTimeout(fetchProducts, 300);
     return () => clearTimeout(timeout);
   }, [fetchProducts]);
+
+  async function handleSold(product: Product) {
+    if (!sellPrice || isNaN(Number(sellPrice)) || Number(sellPrice) <= 0) return;
+    setMarkingSold(true);
+    try {
+      await fetch(`/api/products/${product.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...product, price: Number(sellPrice), status: "sold" }),
+      });
+      setSellingId(null);
+      setSellPrice("");
+      fetchProducts();
+    } catch {
+      // silently fail
+    } finally {
+      setMarkingSold(false);
+    }
+  }
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Delete "${name}"? This action cannot be undone.`)) return;
@@ -192,9 +214,8 @@ export default function ProductTable() {
                 </tr>
               ) : (
                 data.products.map((product, i) => (
-                  <motion.tr
-                    key={product.id}
-                    initial={{ opacity: 0 }}
+                  <React.Fragment key={product.id}>
+                  <motion.tr initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.03 }}
                     className="border-b border-gray-50 transition-colors hover:bg-gray-50/50"
@@ -227,6 +248,14 @@ export default function ProductTable() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
+                        {product.status === "available" && (
+                          <button
+                            onClick={() => { setSellingId(product.id); setSellPrice(""); }}
+                            className="rounded-md px-2.5 py-1.5 text-xs font-medium text-emerald-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+                          >
+                            Sold
+                          </button>
+                        )}
                         <Link
                           href={`/admin/products/edit/${product.id}`}
                           className="rounded-md px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
@@ -249,6 +278,37 @@ export default function ProductTable() {
                       </div>
                     </td>
                   </motion.tr>
+                  {sellingId === product.id && (
+                    <tr className="border-b border-gray-50 bg-amber-50/50">
+                      <td colSpan={6} className="px-5 py-3">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-medium text-amber-700">Harga Jual (Rp):</span>
+                          <input
+                            type="number"
+                            value={sellPrice}
+                            onChange={(e) => setSellPrice(e.target.value)}
+                            placeholder="Masukkan harga..."
+                            className="w-48 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                            autoFocus
+                          />
+                          <button
+                            onClick={() => handleSold(product)}
+                            disabled={markingSold || !sellPrice}
+                            className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-amber-700 disabled:opacity-50"
+                          >
+                            {markingSold ? "..." : "Konfirmasi"}
+                          </button>
+                          <button
+                            onClick={() => { setSellingId(null); setSellPrice(""); }}
+                            className="rounded-md px-3 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100"
+                          >
+                            Batal
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </React.Fragment>
                 ))
               )}
             </tbody>

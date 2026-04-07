@@ -69,13 +69,8 @@ export default function ProductForm({ product }: { product?: ProductData }) {
     setError("");
     setSuccess("");
 
-    if (!form.name || !form.sku || !form.category || !form.price) {
+    if (!form.name || !form.sku || !form.category) {
       setError("Please fill in all required fields");
-      return;
-    }
-
-    if (isNaN(Number(form.price)) || Number(form.price) <= 0) {
-      setError("Price must be a positive number");
       return;
     }
 
@@ -160,13 +155,12 @@ export default function ProductForm({ product }: { product?: ProductData }) {
 
         <hr className="my-6 border-gray-100" />
 
-        {/* Pricing & Media */}
+        {/* Media */}
         <fieldset>
           <legend className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">
-            Pricing & Media
+            Media
           </legend>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <InputField label="Price (Rp) *" value={form.price} onChange={(v) => update("price", v)} placeholder="5000000" type="number" />
+          <div className="grid grid-cols-1 gap-4">
             <InputField label="Image URL" value={form.imageUrl} onChange={(v) => update("imageUrl", v)} placeholder="https://..." />
           </div>
           <div className="mt-4">

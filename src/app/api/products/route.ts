@@ -50,9 +50,9 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    if (!body.name || !body.sku || !body.category || body.price == null) {
+    if (!body.name || !body.sku || !body.category) {
       return NextResponse.json(
-        { error: "Name, SKU, category, and price are required" },
+        { error: "Name, SKU, and category are required" },
         { status: 400 }
       );
     }
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
         material: body.material || null,
         purity: body.purity || null,
         weight: body.weight ? parseFloat(body.weight) : null,
-        price: parseFloat(body.price),
+        price: body.price ? parseFloat(body.price) : 0,
         description: body.description || null,
         imageUrl: body.imageUrl || null,
         status: body.status || "available",
